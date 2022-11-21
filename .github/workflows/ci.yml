@@ -10,14 +10,19 @@ on:
 
 jobs:
   test-code:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
-
-      - name: Checkout Code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
 
       - name: Check Code
+        uses: actions-rs/cargo@v1
         run: git submodule update --init --recursive && cargo check
 
       - name: Test Code
