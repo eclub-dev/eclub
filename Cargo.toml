@@ -1,0 +1,86 @@
+[package]
+name = "eclub"
+version = "0.1.0"
+edition = "2021"
+description = "An modern community platform built in Rust"
+categories = ["community platform"]
+keywords = ["platform", "community", "forum"]
+license = "MIT"
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[workspace]
+members = [".", "migration"]
+
+[features]
+default = ["local"]
+product = []
+local = []
+
+[dependencies]
+migration = { path = "migration" }
+
+
+
+tokio              = { version = "1.21.0", features = ["macros", "rt-multi-thread"] }
+tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
+tracing            = { version = "0.1.37" }
+
+
+# axum
+axum        = { git = "https://github.com/tokio-rs/axum", branch = "main", features = ["headers"] }
+tower       = { version = "0.4.13" }
+tower-http  = { version = "0.3.4", features = ["trace", "cors"] }
+# orm
+sea-orm     = { version = "0.10.3", features = ["macros", "sqlx-mysql", "runtime-tokio-rustls", "with-json", "with-time", "sqlx-dep"], default-features = false }
+sqlx        = { version = "=0.6.2" }
+# validator
+validator   = { version = "0.16", features = ["derive"] }
+# en/de
+serde       = { version = "1.0.145" }
+
+
+
+
+# email
+lettre = { version = "=0.10.1", default-features = false, features = ["smtp-transport", "native-tls", "hostname", "builder"] }
+
+# string generator/decode/encode
+argon2                = { version = "0.4.1" }
+rand                  = { version = "0.8.5" }
+time                  = { version = "0.3.17" }
+ulid                  = { version = "1.0.0" }
+# jwt token generated
+jwt                   = { version = "0.16.0" }
+hmac                  = { version = "0.12.1" }
+sha2                  = { version = "0.10.6" }
+
+
+# environment value
+clap   = { version = "4.0.15", features = ["derive", "env", "cargo"] }
+dotenv = { version = "0.15.0" }
+
+
+
+
+# error handling
+anyhow    = { version = "1.0.65" }
+thiserror = { version = "1.0.37" }
+
+# misc
+lazy_static = { version = "1.4.0" }
+regex       = { version = "1.7.0" }
+
+
+
+
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+
+
+
+
