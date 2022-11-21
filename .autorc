@@ -1,0 +1,9 @@
+{
+  "plugins": [
+    "git-tag",
+    "crates"
+  ],
+  "owner": "eclub-dev",
+  "repo": "eclub",
+  "onlyPublishWithReleaseLabel": true
+}
