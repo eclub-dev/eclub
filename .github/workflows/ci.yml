@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  test-code:
+    runs-on: ubuntu-20.04
+
+    steps:
+
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Check Code
+        run: git submodule update --init --recursive && cargo check
+
+      - name: Test Code
+        run: cargo test
