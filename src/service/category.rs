@@ -2,11 +2,9 @@ use crate::AppState;
 use axum::Json;
 use sea_orm::*;
 
-use crate::domain::helper::category::{QueryAs, CategoryVO};
+use crate::domain::helper::category::{CategoryVO, QueryAs};
 use crate::domain::models::category::{self, ActiveModel, Entity, Model};
 use crate::error::Result;
-
-
 
 /// Category ServiceBuilder
 pub struct CategoryService;
@@ -22,7 +20,7 @@ impl CategoryService {
 	/// Returns:
 	///
 	/// A Result<Option<Model>>
-	pub async fn find_tag_by_name(db: &DbConn, category_name: &String) -> Result<Option<Model>> {
+	pub async fn find_tag_by_name(db: &DbConn, category_name: &str) -> Result<Option<Model>> {
 		Ok(Entity::find().filter(category::Column::Name.eq(category_name.to_owned())).one(db).await?)
 	}
 
@@ -46,7 +44,9 @@ impl CategoryService {
 				})
 				.collect::<Vec<ActiveModel>>(),
 		)
-		.on_conflict(sea_query::OnConflict::column(category::Column::Name).update_column(category::Column::Name).to_owned())
+		.on_conflict(
+			sea_query::OnConflict::column(category::Column::Name).update_column(category::Column::Name).to_owned(),
+		)
 		.exec(db)
 		.await?)
 	}
@@ -84,10 +84,9 @@ impl CategoryService {
 	///
 	/// A vector of strings.
 	pub async fn get_user_category(app_state: &AppState, username: &str) -> Result<Json<CategoryVO>> {
-		let category_list: Vec<String> = <String>::find_by_statement::<QueryAs>(
-			Statement::from_sql_and_values(
-				DbBackend::MySql,
-				r#"
+		let category_list: Vec<String> = <String>::find_by_statement::<QueryAs>(Statement::from_sql_and_values(
+			DbBackend::MySql,
+			r#"
 					select
 						category.name as name
 					from category
@@ -97,12 +96,10 @@ impl CategoryService {
 					on user_category.user_id=user.id
 					where user.username=?
 				"#,
-				vec![username.into()],
-			)
-		)
-			.all(&app_state.conn)
-			.await?;
-
+			vec![username.into()],
+		))
+		.all(&app_state.conn)
+		.await?;
 
 		Ok(Json(CategoryVO {
 			category_list,

@@ -1,11 +1,11 @@
 use crate::domain::helper::email::EmailSendBO;
-use crate::error::{Result};
-use crate::utils::constants::email::{CONFIRM_SUBJECT};
+use crate::error::Result;
+use crate::utils::constants::email::CONFIRM_SUBJECT;
 use crate::AppState;
 use sea_orm::ActiveValue::Set;
 use sea_orm::*;
 
-use crate::domain::models::email::{ActiveModel as EmailActiveModel};
+use crate::domain::models::email::ActiveModel as EmailActiveModel;
 
 /// Email ServiceBuilder
 pub struct EmailService;
