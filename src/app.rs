@@ -9,11 +9,13 @@ use std::time::Duration;
 use tower::ServiceBuilder;
 use tower_http::{trace::TraceLayer};
 
-use crate::controller::user;
+use crate::controller::{user,tag, category};
 use crate::utils::email::Emails;
 
 fn api_router(state: AppState) -> Router<AppState> {
 	user::router(state.to_owned())
+		.merge(tag::router(state.to_owned()))
+		.merge(category::router(state.to_owned()))
 }
 
 /// local server run

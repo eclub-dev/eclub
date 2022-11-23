@@ -86,6 +86,16 @@ impl UserService {
 		}))
 	}
 
+	/// > This function confirms a user by updating the user's `is_valid` field to `1` and returns the user's information
+	///
+	/// Arguments:
+	///
+	/// * `app_state`: &AppState - This is the application state that we created in the main.rs file.
+	/// * `token`: The token that was sent to the user's email address.
+	///
+	/// Returns:
+	///
+	/// A JSON object with the user's information.
 	pub async fn confirm_user(app_state: &AppState, token: &str) -> Result<Json<UserVO<UserBO>>> {
 		let confirm_res: EmailModel = email::Entity::find()
 			.filter(email::Column::Token.eq(token.to_owned()))
