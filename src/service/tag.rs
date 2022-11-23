@@ -20,7 +20,7 @@ impl TagService {
 	/// Returns:
 	///
 	/// A Result<Option<Model>>
-	pub async fn find_tag_by_name(db: &DbConn, tag_name: &String) -> Result<Option<Model>> {
+	pub async fn find_tag_by_name(db: &DbConn, tag_name: &str) -> Result<Option<Model>> {
 		Ok(Entity::find().filter(tag::Column::Name.eq(tag_name.to_owned())).one(db).await?)
 	}
 
