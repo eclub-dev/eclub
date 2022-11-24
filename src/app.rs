@@ -1,5 +1,4 @@
 #[cfg(feature = "local")]
-
 use crate::{AppState, Config};
 use anyhow::Context;
 use axum::Router;

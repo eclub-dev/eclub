@@ -18,9 +18,9 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: 1.65.0
+          toolchain: stable
           override: true
           components: rustfmt, clippy
 
       - name: Test Code
-        run: cargo test
+        run: cargo build
