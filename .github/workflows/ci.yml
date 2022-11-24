@@ -21,9 +21,10 @@ jobs:
           override: true
           components: rustfmt, clippy
 
-      - name: Check Code
+      - name: Run cargo check
         uses: actions-rs/cargo@v1
-        run: git submodule update --init --recursive && cargo check
+        with:
+          command: check
 
       - name: Test Code
         run: cargo test
