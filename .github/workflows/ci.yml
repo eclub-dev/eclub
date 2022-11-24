@@ -21,8 +21,5 @@ jobs:
           override: true
           components: rustfmt, clippy
 
-      - name: Run cargo check
-        run: cargo check
-
       - name: Test Code
         run: cargo test
