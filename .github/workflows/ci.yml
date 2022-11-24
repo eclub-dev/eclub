@@ -22,9 +22,7 @@ jobs:
           components: rustfmt, clippy
 
       - name: Run cargo check
-        uses: actions-rs/cargo@v1
-        with:
-          command: check
+        run: cargo check
 
       - name: Test Code
         run: cargo test
