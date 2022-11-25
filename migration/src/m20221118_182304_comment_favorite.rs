@@ -18,8 +18,8 @@ impl MigrationTrait for Migration {
 			  PRIMARY KEY (`id`),
 			  KEY `comment_favorite_comment_id` (`comment_id`),
 			  KEY `comment_favorite_user_id` (`user_id`),
-			  CONSTRAINT `comment_favorite_comment_id` FOREIGN KEY (`comment_id`) REFERENCES `comment` (`id`),
-			  CONSTRAINT `comment_favorite_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+			  CONSTRAINT `comment_favorite_comment_id` FOREIGN KEY (`comment_id`) REFERENCES `comment` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+			  CONSTRAINT `comment_favorite_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
         "#;
 		let stmt = Statement::from_string(manager.get_database_backend(), sql.to_owned());

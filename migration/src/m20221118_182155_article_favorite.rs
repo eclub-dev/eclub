@@ -16,8 +16,8 @@ impl MigrationTrait for Migration {
 			  PRIMARY KEY (`id`),
 			  KEY `article_favorite_article_id` (`article_id`),
 			  KEY `article_favorite_user_id` (`user_id`),
-			  CONSTRAINT `article_favorite_article_id` FOREIGN KEY (`article_id`) REFERENCES `article` (`id`),
-			  CONSTRAINT `article_favorite_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+			  CONSTRAINT `article_favorite_article_id` FOREIGN KEY (`article_id`) REFERENCES `article` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+			  CONSTRAINT `article_favorite_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
         "#;
 		let stmt = Statement::from_string(manager.get_database_backend(), sql.to_owned());

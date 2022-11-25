@@ -18,8 +18,8 @@ impl MigrationTrait for Migration {
 			  PRIMARY KEY (`id`),
 			  KEY `following_user_id` (`follow_id`),
 			  KEY `followed_user_id` (`user_id`),
-			  CONSTRAINT `followed_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
-			  CONSTRAINT `following_user_id` FOREIGN KEY (`follow_id`) REFERENCES `user` (`id`)
+			  CONSTRAINT `followed_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+			  CONSTRAINT `following_user_id` FOREIGN KEY (`follow_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
         "#;
 		let stmt = Statement::from_string(manager.get_database_backend(), sql.to_owned());

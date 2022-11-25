@@ -14,8 +14,8 @@ impl MigrationTrait for Migration {
 			  `tag_id` bigint unsigned NOT NULL,
 			  PRIMARY KEY (`article_id`,`tag_id`),
 			  KEY `article_tag_ tag_id` (`tag_id`),
-			  CONSTRAINT `article_tag_ article_id` FOREIGN KEY (`article_id`) REFERENCES `article` (`id`),
-			  CONSTRAINT `article_tag_ tag_id` FOREIGN KEY (`tag_id`) REFERENCES `tag` (`id`)
+			  CONSTRAINT `article_tag_ article_id` FOREIGN KEY (`article_id`) REFERENCES `article` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+			  CONSTRAINT `article_tag_ tag_id` FOREIGN KEY (`tag_id`) REFERENCES `tag` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
 			) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
         "#;
 		let stmt = Statement::from_string(manager.get_database_backend(), sql.to_owned());

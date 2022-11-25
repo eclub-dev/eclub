@@ -71,6 +71,7 @@ thiserror = { version = "1.0.37" }
 # misc
 lazy_static = { version = "1.4.0" }
 regex       = { version = "1.7.0" }
+slug 		= { version = "0.1.4" }
 
 
 
