@@ -15,21 +15,56 @@ pub fn router(state: AppState) -> Router<AppState> {
 		.route("/api/articles/:slug", get(get_article).put(create_or_update_article))
 }
 
+/// for writer
 async fn create_or_update_article(
 	State(app_state): State<AppState>,
 	auth_user: AuthUserClaims,
 	Path(slug): Path<String>,
 	ValidatedJson(mut req): ValidatedJson<ArticleVO<CreateArticleVO>>,
 ) -> Result<Json<ArticleVO<ArticleBO>>> {
-	Ok(ArticleService::create_or_update(&app_state, &req.article, &slug, &auth_user.id).await?)
+	Ok(ArticleService::create_or_update(&app_state, &req.article, &slug[..], &auth_user.id).await?)
 }
 
 async fn get_article(
 	State(app_state): State<AppState>,
+	Path(ulid): Path<String>,
+) -> Result<Json<ArticleVO<ArticleBO>>> {
+	Ok(ArticleService::get_article(&app_state, &ulid[..]).await?)
+}
+
+/// for writer
+async fn delete_article(
+	State(app_state): State<AppState>,
 	auth_user: AuthUserClaims,
 	Path(slug): Path<String>,
-) -> Result<Json<ArticleVO<ArticleBO>>> {
-	Ok(ArticleService::get_article(&app_state, &slug, &auth_user.id).await?)
+) -> Result<()> {
+	Ok(ArticleService::delete_article(&app_state, &slug[..], &auth_user.id).await?)
 }
+
+async fn favorite_article(
+	State(app_state): State<AppState>,
+	auth_user: AuthUserClaims,
+	Path(ulid): Path<String>,
+) -> Result<()> {
+	Ok(ArticleService::favorite_article(&app_state, &ulid[..], &auth_user.id).await?)
+}
+
+async fn unfavorite_article(
+	State(app_state): State<AppState>,
+	auth_user: AuthUserClaims,
+	Path(ulid): Path<String>,
+) -> Result<()> {
+	Ok(ArticleService::unfavorite_article(&app_state, &ulid[..], &auth_user.id).await?)
+}
+
+async fn view_article(
+	State(app_state): State<AppState>,
+	auth_user: AuthUserClaims,
+	Path(ulid): Path<String>,
+) -> Result<()> {
+	Ok(ArticleService::view_article(&app_state, &ulid[..], &auth_user.id).await?)
+}
+
+
 
 

@@ -14,8 +14,12 @@ pub mod profile;
 pub mod tag;
 #[allow(missing_docs)]
 pub mod user;
+#[allow(missing_docs)]
 pub mod article_category;
+#[allow(missing_docs)]
 pub mod user_category;
+#[allow(missing_docs)]
+pub mod article_favorite;
 
 pub use self::article::ArticleService;
 pub use self::article_tag::ArticleTagService;

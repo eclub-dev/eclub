@@ -4,10 +4,12 @@ use crate::domain::helper::user::UserBO;
 use crate::domain::models::article::{self, ActiveModel, Entity, Model};
 use crate::domain::models::user;
 use crate::error::{Error, Result};
+use crate::service::article_favorite::ArticleFavoriteService;
 use crate::service::{ArticleCategoryService, ArticleTagService, CategoryService, TagService, UserCategoryService};
 use crate::AppState;
 use axum::Json;
 use sea_orm::*;
+use sea_orm::ActiveValue::Set;
 
 pub struct ArticleService;
 
@@ -18,14 +20,7 @@ impl ArticleService {
 		slug: &str,
 		user_id: &u64,
 	) -> Result<Json<ArticleVO<ArticleBO>>> {
-		if let Some(Model {
-			id,
-			..
-		}) = ArticleService::find_article(&app_state.conn, &slug, &user_id).await?
-		{
-			ArticleTagService::delete_by_article_id(&app_state.conn, &id).await?;
-			ArticleCategoryService::delete_by_article_id(&app_state.conn, &id).await?;
-		}
+		ArticleService::delete_article_related(&app_state.conn, &slug, &user_id).await?;
 
 		let saved_model: Model = <CreateArticleVO as Into<ActiveModel>>::into(create_article.to_owned())
 			.save(&app_state.conn)
@@ -53,17 +48,15 @@ impl ArticleService {
 		}))
 	}
 
-	pub async fn get_article(app_state: &AppState, slug: &str, user_id: &u64) -> Result<Json<ArticleVO<ArticleBO>>> {
+	pub async fn get_article(app_state: &AppState, ulid: &str) -> Result<Json<ArticleVO<ArticleBO>>> {
 		let article: Model =
-			ArticleService::find_article(&app_state.conn, &slug, &user_id).await?.ok_or(Error::NotFound)?;
+			ArticleService::find_article_by_ulid(&app_state.conn, &ulid).await?.ok_or(Error::NotFound)?;
 
-		let category_list =
-			ArticleCategoryService::find_by_article_id(&app_state.conn, &article.id).await?;
-		let tag_list =
-			ArticleTagService::find_by_article_id(&app_state.conn, &article.id).await?;
+		let category_list = ArticleCategoryService::find_by_article_id(&app_state.conn, &article.id).await?;
+		let tag_list = ArticleTagService::find_by_article_id(&app_state.conn, &article.id).await?;
 
 		let user_res: user::Model =
-			user::Entity::find_by_id(user_id.to_owned()).one(&app_state.conn).await?.ok_or(Error::NotFound)?;
+			user::Entity::find_by_id(article.user_id.to_owned()).one(&app_state.conn).await?.ok_or(Error::NotFound)?;
 
 		tracing::debug!("create or update : {:?}", article);
 		Ok(Json(ArticleVO {
@@ -76,6 +69,57 @@ impl ArticleService {
 		}))
 	}
 
+	pub async fn delete_article(app_state: &AppState, slug: &str, user_id: &u64) -> Result<()> {
+		ArticleService::delete_article_related(&app_state.conn, &slug, &user_id).await?;
+		let deleted = ArticleService::delete_article_by_slug(&app_state.conn, &slug, &user_id).await?;
+		if deleted.rows_affected > 0 {
+			return Ok(());
+		}
+		Err(Error::NotFound)
+	}
+
+	pub async fn favorite_article(app_state: &AppState, ulid: &str, input_user_id: &u64) -> Result<()> {
+		if let Some(Model {
+			id,
+			user_id,
+			..
+		}) = ArticleService::find_article_by_ulid(&app_state.conn, &ulid).await?
+		{
+			if &user_id != input_user_id {
+				return Err(Error::NotFound)
+			}
+			ArticleFavoriteService::insert(&app_state.conn, &id, &user_id).await?;
+		}
+		Err(Error::NotFound)
+	}
+
+	pub async fn unfavorite_article(app_state: &AppState, ulid: &str, input_user_id: &u64) -> Result<()> {
+		if let Some(Model {
+			id,
+			user_id,
+			..
+		}) = ArticleService::find_article_by_ulid(&app_state.conn, &ulid).await?
+		{
+			if &user_id != input_user_id {
+				return Err(Error::NotFound)
+			}
+			ArticleFavoriteService::delete(&app_state.conn, &id, &user_id).await?;
+		}
+		Err(Error::NotFound)
+	}
+
+	pub async fn view_article(app_state: &AppState, slug: &str, user_id: &u64) -> Result<()> {
+		if let Some(model) = ArticleService::find_article(&app_state.conn, &slug, &user_id).await?
+		{
+			let new_views = &model.views + 1;
+			let mut article_active: article::ActiveModel = model.into();
+			article_active.views = Set(new_views);
+			article_active.update(&app_state.conn).await?;
+			return Ok(());
+		}
+		Err(Error::NotFound)
+	}
+
 	pub async fn find_article(db: &DbConn, slug: &str, user_id: &u64) -> Result<Option<Model>> {
 		Ok(Entity::find()
 			.filter(
@@ -85,5 +129,32 @@ impl ArticleService {
 			)
 			.one(db)
 			.await?)
+	}
+
+	pub async fn find_article_by_ulid(db: &DbConn, ulid: &str) -> Result<Option<Model>> {
+		Ok(Entity::find().filter(article::Column::Ulid.eq(ulid.to_owned())).one(db).await?)
+	}
+
+	pub async fn delete_article_by_slug(db: &DbConn, slug: &str, user_id: &u64) -> Result<DeleteResult> {
+		Ok(Entity::delete_many()
+			.filter(
+				Condition::all()
+					.add(article::Column::UserId.eq(user_id.to_owned()))
+					.add(article::Column::Slug.eq(slug.to_owned())),
+			)
+			.exec(db)
+			.await?)
+	}
+
+	pub async fn delete_article_related(db: &DbConn, slug: &str, user_id: &u64) -> Result<()> {
+		if let Some(Model {
+			id,
+			..
+		}) = ArticleService::find_article(&db, &slug, &user_id).await?
+		{
+			ArticleTagService::delete_by_article_id(&db, &id).await?;
+			ArticleCategoryService::delete_by_article_id(&db, &id).await?;
+		}
+		Err(Error::NotFound)
 	}
 }
