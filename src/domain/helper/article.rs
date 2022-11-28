@@ -1,6 +1,7 @@
 use crate::domain::helper::profile::ProfileBO;
 use crate::domain::models::article::{ActiveModel, Model};
 use sea_orm::prelude::TimeDateTime;
+use sea_orm::FromQueryResult;
 use sea_orm::Set;
 use serde::{Deserialize, Serialize};
 use std::convert::{From, Into};
@@ -25,7 +26,6 @@ pub struct CreateArticleVO {
 
 impl From<CreateArticleVO> for ActiveModel {
 	fn from(creat_article: CreateArticleVO) -> Self {
-
 		Self {
 			ulid: Set(ulid::Ulid::new().to_string()),
 			slug: Set(slug::slugify(creat_article.title.to_owned())),
@@ -87,3 +87,43 @@ impl ArticleBO {
 		}
 	}
 }
+
+#[derive(Deserialize, Default)]
+#[serde(default)]
+pub struct ListArticlesQueryVO {
+	/// filter user id
+	pub user_id: u64,
+	/// filter title like
+	pub title: String,
+	/// page size
+	#[serde(default = "default_limit")]
+	pub limit: u64,
+	/// page
+	#[serde(default = "default_offset")]
+	pub offset: u64,
+}
+
+fn default_limit() -> u64 {
+	20
+}
+
+fn default_offset() -> u64 {
+	1
+}
+
+#[derive(Debug, Serialize, Deserialize, FromQueryResult)]
+pub struct ListArticleBO {
+	pub ulid: String,
+	pub title: String,
+	pub head_img: String,
+	pub content: String,
+	pub content_type: u8,
+	pub views: u64,
+	pub likes: u64,
+	pub is_pin: u8,
+	pub is_official: u8,
+	pub create_time: TimeDateTime,
+	pub update_time: TimeDateTime,
+}
+
+
