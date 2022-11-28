@@ -2,7 +2,7 @@ use axum::extract::{Path, Query, State};
 use axum::routing::{get, post};
 use axum::{Json, Router};
 
-use crate::domain::helper::article::{ArticleBO, ArticleVO, CreateArticleVO, ListArticlesQueryVO, UpdateArticleVO};
+use crate::domain::helper::article::{ArticleBO, ArticleVO, CreateArticleVO, ListArticlesQueryVO};
 use crate::domain::helper::ListVO;
 use crate::extractor::{AuthUserClaims, ValidatedJson};
 use crate::service::ArticleService;
@@ -21,7 +21,7 @@ pub fn router(state: AppState) -> Router<AppState> {
 async fn upset_article(
 	State(app_state): State<AppState>,
 	auth_user: AuthUserClaims,
-	ValidatedJson(mut req): ValidatedJson<ArticleVO<CreateArticleVO>>,
+	ValidatedJson(req): ValidatedJson<ArticleVO<CreateArticleVO>>,
 ) -> Result<Json<ArticleVO<ArticleBO>>> {
 	Ok(ArticleService::upset_article(&app_state, &req.article, &auth_user.id).await?)
 }

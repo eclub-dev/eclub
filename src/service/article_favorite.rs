@@ -1,5 +1,5 @@
 use sea_orm::*;
-use crate::error::{Error, Result};
+use crate::error::{Result};
 use crate::domain::models::article_favorite::{self, ActiveModel, Entity, Model};
 
 pub struct ArticleFavoriteService;

@@ -1,9 +1,8 @@
-use std::collections::HashMap;
 #[cfg(feature = "local")]
 
 use crate::{AppState, Config};
 use anyhow::Context;
-use axum::{Router, ServiceExt};
+use axum::{Router};
 use migration::{Migrator, MigratorTrait};
 use sea_orm::*;
 use std::time::Duration;

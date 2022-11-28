@@ -1,12 +1,11 @@
 use crate::domain::helper::article::{ArticleBO, ArticleVO, CreateArticleVO, ListArticleBO, ListArticlesQueryVO};
 use crate::domain::helper::profile::ProfileBO;
-use crate::domain::helper::user::UserBO;
 use crate::domain::helper::ListVO;
 use crate::domain::models::article::{self, ActiveModel, Entity, Model};
 use crate::domain::models::user;
 use crate::error::{Error, Result};
 use crate::service::article_favorite::ArticleFavoriteService;
-use crate::service::{ArticleCategoryService, ArticleTagService, CategoryService, TagService, UserCategoryService};
+use crate::service::{ArticleCategoryService, ArticleTagService, CategoryService, TagService};
 use crate::AppState;
 use axum::extract::Query;
 use axum::Json;
@@ -61,7 +60,7 @@ impl ArticleService {
 	pub async fn get_article(app_state: &AppState, ulid: &str) -> Result<Json<ArticleVO<ArticleBO>>> {
 		let article: Model =
 			ArticleService::find_article_by_ulid(&app_state.conn, &ulid).await?.ok_or(Error::NotFound)?;
-		Ok(ArticleService::full_article(&app_state.conn, article)?)
+		Ok(ArticleService::full_article(&app_state.conn, article).await?)
 	}
 
 	pub async fn delete_article(app_state: &AppState, ulid: &str, user_id: &u64) -> Result<()> {
@@ -80,7 +79,7 @@ impl ArticleService {
 	) -> Result<Json<ArticleVO<ArticleBO>>> {
 		let article = ArticleService::find_article_by_ulid(&app_state.conn, &ulid).await?.ok_or(Error::NotFound)?;
 		ArticleFavoriteService::insert(&app_state.conn, &article.user_id, &user_id).await?;
-		Ok(ArticleService::full_article(&app_state.conn, article)?)
+		Ok(ArticleService::full_article(&app_state.conn, article).await?)
 	}
 
 	pub async fn unfavorite_article(
@@ -90,7 +89,7 @@ impl ArticleService {
 	) -> Result<Json<ArticleVO<ArticleBO>>> {
 		let article = ArticleService::find_article_by_ulid(&app_state.conn, &ulid).await?.ok_or(Error::NotFound)?;
 		ArticleFavoriteService::delete(&app_state.conn, &article.user_id, &user_id).await?;
-		Ok(ArticleService::full_article(&app_state.conn, article)?)
+		Ok(ArticleService::full_article(&app_state.conn, article).await?)
 	}
 
 	pub async fn view_article(app_state: &AppState, ulid: &str) -> Result<()> {
@@ -198,7 +197,7 @@ impl ArticleService {
 		let category_list = ArticleCategoryService::find_by_article_id(&db, &article.id).await?;
 		let tag_list = ArticleTagService::find_by_article_id(&db, &article.id).await?;
 		let user_res: user::Model =
-			user::Entity::find_by_id(&article.user_id.to_owned()).one(&db).await?.ok_or(Error::NotFound)?;
+			user::Entity::find_by_id(article.user_id.to_owned()).one(db).await?.ok_or(Error::NotFound)?;
 
 		Ok(Json(ArticleVO {
 			article: ArticleBO::from_model(

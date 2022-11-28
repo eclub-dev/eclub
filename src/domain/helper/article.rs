@@ -4,7 +4,7 @@ use sea_orm::prelude::TimeDateTime;
 use sea_orm::FromQueryResult;
 use sea_orm::Set;
 use serde::{Deserialize, Serialize};
-use std::convert::{From, Into};
+use std::convert::{From};
 use validator::Validate;
 
 #[derive(Debug, Serialize, Validate, Deserialize)]

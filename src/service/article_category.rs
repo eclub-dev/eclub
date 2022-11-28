@@ -1,5 +1,5 @@
 use crate::domain::helper::category::QueryAs;
-use crate::domain::models::{article_category, article_tag, category};
+use crate::domain::models::{article_category, category};
 use crate::error::Result;
 use sea_orm::sea_query::{Expr, Query};
 use sea_orm::*;
