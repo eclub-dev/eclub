@@ -26,7 +26,7 @@ impl ArticleService {
 		let create_article_active: ActiveModel =
 			<CreateArticleVO as Into<ActiveModel>>::into(create_article.to_owned());
 
-		let saved_model: Model =create_article_active.clone().try_into_model()?;
+		let saved_model: Model = create_article_active.clone().try_into_model()?;
 
 		let insert_res: InsertResult<ActiveModel> = Entity::insert(create_article_active)
 			.on_conflict(
@@ -41,9 +41,7 @@ impl ArticleService {
 
 		let tag_list = &create_article.tag_list;
 		let category_list = &create_article.category_list;
-
 		TagService::insert_many_by_article_id(&app_state.conn, &insert_res.last_insert_id, &tag_list).await?;
-
 		CategoryService::insert_many_by_id(&app_state.conn, &user_id, &insert_res.last_insert_id, &category_list)
 			.await?;
 
@@ -63,22 +61,7 @@ impl ArticleService {
 	pub async fn get_article(app_state: &AppState, ulid: &str) -> Result<Json<ArticleVO<ArticleBO>>> {
 		let article: Model =
 			ArticleService::find_article_by_ulid(&app_state.conn, &ulid).await?.ok_or(Error::NotFound)?;
-
-		let category_list = ArticleCategoryService::find_by_article_id(&app_state.conn, &article.id).await?;
-		let tag_list = ArticleTagService::find_by_article_id(&app_state.conn, &article.id).await?;
-
-		let user_res: user::Model =
-			user::Entity::find_by_id(article.user_id.to_owned()).one(&app_state.conn).await?.ok_or(Error::NotFound)?;
-
-		tracing::debug!("create or update : {:?}", article);
-		Ok(Json(ArticleVO {
-			article: ArticleBO::from_model(
-				article,
-				ProfileBO::from_user(user_res, false),
-				tag_list.to_owned(),
-				category_list.to_owned(),
-			),
-		}))
+		Ok(ArticleService::full_article(&app_state.conn, article)?)
 	}
 
 	pub async fn delete_article(app_state: &AppState, ulid: &str, user_id: &u64) -> Result<()> {
@@ -90,34 +73,24 @@ impl ArticleService {
 		Err(Error::NotFound)
 	}
 
-	pub async fn favorite_article(app_state: &AppState, ulid: &str, input_user_id: &u64) -> Result<()> {
-		if let Some(Model {
-			id,
-			user_id,
-			..
-		}) = ArticleService::find_article_by_ulid(&app_state.conn, &ulid).await?
-		{
-			if &user_id != input_user_id {
-				return Err(Error::NotFound);
-			}
-			ArticleFavoriteService::insert(&app_state.conn, &id, &user_id).await?;
-		}
-		Err(Error::NotFound)
+	pub async fn favorite_article(
+		app_state: &AppState,
+		ulid: &str,
+		user_id: &u64,
+	) -> Result<Json<ArticleVO<ArticleBO>>> {
+		let article = ArticleService::find_article_by_ulid(&app_state.conn, &ulid).await?.ok_or(Error::NotFound)?;
+		ArticleFavoriteService::insert(&app_state.conn, &article.user_id, &user_id).await?;
+		Ok(ArticleService::full_article(&app_state.conn, article)?)
 	}
 
-	pub async fn unfavorite_article(app_state: &AppState, ulid: &str, input_user_id: &u64) -> Result<()> {
-		if let Some(Model {
-			id,
-			user_id,
-			..
-		}) = ArticleService::find_article_by_ulid(&app_state.conn, &ulid).await?
-		{
-			if &user_id != input_user_id {
-				return Err(Error::NotFound);
-			}
-			ArticleFavoriteService::delete(&app_state.conn, &id, &user_id).await?;
-		}
-		Err(Error::NotFound)
+	pub async fn unfavorite_article(
+		app_state: &AppState,
+		ulid: &str,
+		user_id: &u64,
+	) -> Result<Json<ArticleVO<ArticleBO>>> {
+		let article = ArticleService::find_article_by_ulid(&app_state.conn, &ulid).await?.ok_or(Error::NotFound)?;
+		ArticleFavoriteService::delete(&app_state.conn, &article.user_id, &user_id).await?;
+		Ok(ArticleService::full_article(&app_state.conn, article)?)
 	}
 
 	pub async fn view_article(app_state: &AppState, ulid: &str) -> Result<()> {
@@ -187,7 +160,7 @@ impl ArticleService {
 		Ok(Entity::find().filter(article::Column::Ulid.eq(ulid.to_owned())).one(db).await?)
 	}
 
-	pub async fn find_article_by_id(db: &DbConn, ulid: &str, user_id: &u64) -> Result<Option<Model>>  {
+	pub async fn find_article_by_id(db: &DbConn, ulid: &str, user_id: &u64) -> Result<Option<Model>> {
 		Ok(Entity::find()
 			.filter(
 				Condition::all()
@@ -219,5 +192,21 @@ impl ArticleService {
 			)
 			.exec(db)
 			.await?)
+	}
+
+	pub async fn full_article(db: &DbConn, article: Model) -> Result<Json<ArticleVO<ArticleBO>>> {
+		let category_list = ArticleCategoryService::find_by_article_id(&db, &article.id).await?;
+		let tag_list = ArticleTagService::find_by_article_id(&db, &article.id).await?;
+		let user_res: user::Model =
+			user::Entity::find_by_id(&article.user_id.to_owned()).one(&db).await?.ok_or(Error::NotFound)?;
+
+		Ok(Json(ArticleVO {
+			article: ArticleBO::from_model(
+				article,
+				ProfileBO::from_user(user_res, false),
+				tag_list.to_owned(),
+				category_list.to_owned(),
+			),
+		}))
 	}
 }
