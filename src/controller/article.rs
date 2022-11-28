@@ -13,7 +13,7 @@ use crate::error::Result;
 pub fn router(state: AppState) -> Router<AppState> {
 	Router::with_state(state)
 		.route("/api/articles", post(upset_article).put(upset_article).get(list_articles))
-		.route("/api/articles/:ulid", get(get_article).delete(delete_article))
+		.route("/api/articles/:ulid", get(get_article).delete(delete_article).put(view_article))
 		.route("/api/articles/:ulid/favorite", post(favorite_article).delete(unfavorite_article))
 }
 
