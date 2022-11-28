@@ -23,7 +23,7 @@ impl MigrationTrait for Migration {
 			  PRIMARY KEY (`id`),
 			  UNIQUE KEY `uk_username` (`username`),
 			  UNIQUE KEY `uk_email` (`email`)
-			) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+			) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
         "#;
 		let stmt = Statement::from_string(manager.get_database_backend(), sql.to_owned());
 		manager.get_connection().execute(stmt).await.map(|_| ())

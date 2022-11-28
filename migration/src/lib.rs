@@ -14,6 +14,7 @@ mod m20221118_182318_follow;
 mod m20221118_182326_message;
 mod m20221118_182352_user_category;
 mod m20221120_160047_email;
+mod m20221118_182332_article_category;
 
 pub struct Migrator;
 
@@ -33,6 +34,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20221118_182304_comment_favorite::Migration),
             Box::new(m20221118_182318_follow::Migration),
             Box::new(m20221118_182326_message::Migration),
+            Box::new(m20221118_182332_article_category::Migration),
             Box::new(m20221118_182352_user_category::Migration),
             Box::new(m20221120_160047_email::Migration),
         ]

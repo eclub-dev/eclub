@@ -3,7 +3,9 @@ use axum::Json;
 use sea_orm::*;
 
 use crate::domain::helper::category::{CategoryVO, QueryAs};
+use crate::domain::models::article_category;
 use crate::domain::models::category::{self, ActiveModel, Entity, Model};
+use crate::domain::models::user_category;
 use crate::error::Result;
 
 /// Category ServiceBuilder
@@ -49,6 +51,38 @@ impl CategoryService {
 		)
 		.exec(db)
 		.await?)
+	}
+
+	pub async fn insert_many_by_id(
+		db: &DbConn,
+		user_id: &u64,
+		article_id: &u64,
+		category_list: &Vec<String>,
+	) -> Result<()> {
+		// TODO: batch job
+		for category in category_list {
+			let cg = category::ActiveModel {
+				name: Set(category.to_owned()),
+				..Default::default()
+			};
+
+			let cg_model: Model = cg.insert(db).await?;
+
+			article_category::ActiveModel {
+				article_id: Set(article_id.to_owned()),
+				category_id: Set(cg_model.id.to_owned()),
+			}
+			.insert(db)
+			.await?;
+
+			user_category::ActiveModel {
+				user_id: Set(user_id.to_owned()),
+				category_id: Set(cg_model.id.to_owned()),
+			}
+			.insert(db)
+			.await?;
+		}
+		Ok(())
 	}
 
 	/// > Get a list of all categories from the database

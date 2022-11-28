@@ -1,3 +1,4 @@
+
 #[allow(missing_docs)]
 pub mod user;
 #[allow(missing_docs)]
@@ -6,3 +7,7 @@ pub mod tag;
 pub mod category;
 #[allow(missing_docs)]
 pub mod profile;
+#[allow(missing_docs)]
+pub mod article;
+
+

@@ -3,6 +3,7 @@ use axum::Json;
 use sea_orm::*;
 
 use crate::domain::helper::tag::{QueryAs, TagVO};
+use crate::domain::models::article_tag;
 use crate::domain::models::tag::{self, ActiveModel, Entity, Model};
 use crate::error::Result;
 
@@ -49,6 +50,22 @@ impl TagService {
 		.await?)
 	}
 
+	pub async fn insert_many_by_article_id(db: &DbConn, article_id: &u64, tag_list: &Vec<String>) -> Result<()> {
+		for tag in tag_list {
+			let tg = tag::ActiveModel {
+				name: Set(tag.to_owned()),
+				..Default::default()
+			};
+			let tag_model: Model = tg.insert(db).await?;
+			article_tag::ActiveModel {
+				article_id: Set(article_id.to_owned()),
+				tag_id: Set(tag_model.id.to_owned()),
+			}
+			.insert(db)
+			.await?;
+		}
+		Ok(())
+	}
 	/// > Get all the tags from the database and return them as a JSON object
 	///
 	/// Arguments:
@@ -70,5 +87,4 @@ impl TagService {
 			tag_list,
 		}))
 	}
-
 }

@@ -2,7 +2,7 @@
 
 use crate::{AppState, Config};
 use anyhow::Context;
-use axum::Router;
+use axum::{Router};
 use migration::{Migrator, MigratorTrait};
 use sea_orm::*;
 use std::time::Duration;

@@ -11,13 +11,15 @@ impl MigrationTrait for Migration {
 		let sql = r#"
 			CREATE TABLE `article` (
 			  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'id',
+			  `ulid` char(26) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'ulid',
 			  `user_id` bigint unsigned NOT NULL COMMENT 'user id',
+			  `slug` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'artcile slug',
 			  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'artcile title',
 			  `head_img` varchar(8192) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT 'Article header image',
 			  `content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'content',
 			  `content_type` tinyint unsigned NOT NULL DEFAULT '0' COMMENT 'Article content (0: markdown, 1: html)',
-			  `views` bigint NOT NULL DEFAULT '0' COMMENT 'Views',
-			  `likes` bigint NOT NULL DEFAULT '0' COMMENT 'Likes',
+			  `views` bigint unsigned NOT NULL DEFAULT '0' COMMENT 'Views',
+			  `likes` bigint unsigned NOT NULL DEFAULT '0' COMMENT 'Likes',
 			  `audit_content` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT '0' COMMENT 'The reason for the audit failure',
 			  `is_audit` tinyint unsigned NOT NULL DEFAULT '0' COMMENT 'Audit flag (0: Not audited, 1: Audited but not passed, 2: Audited and passed)',
 			  `is_pin` tinyint unsigned NOT NULL DEFAULT '0' COMMENT 'Pin mark (0: not pinned, 1: pinned)',
@@ -26,10 +28,11 @@ impl MigrationTrait for Migration {
 			  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'create time',
 			  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'update time',
 			  PRIMARY KEY (`id`),
-			  UNIQUE KEY `uk_user_title` (`user_id`,`title`),
+			  UNIQUE KEY `uk_user_slug` (`user_id`,`slug`),
 			  KEY `idx_user_id` (`user_id`),
-			  CONSTRAINT `article_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
-			) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+			  KEY `idx_ulid` (`ulid`) USING BTREE,
+			  CONSTRAINT `article_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE
+			) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
         "#;
 		let stmt = Statement::from_string(manager.get_database_backend(), sql.to_owned());
 		manager.get_connection().execute(stmt).await.map(|_| ())

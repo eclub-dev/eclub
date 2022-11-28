@@ -28,7 +28,8 @@ tracing            = { version = "0.1.37" }
 
 
 # axum
-axum        = { git = "https://github.com/tokio-rs/axum", branch = "main", features = ["headers"] }
+#axum        = { git = "https://github.com/tokio-rs/axum", tag = "axum-v0.6.0-rc.4",features = ["headers"] }
+axum        = { git = "https://github.com/tokio-rs/axum", tag = "axum-v0.6.0-rc.4" ,features = ["headers"] }
 tower       = { version = "0.4.13" }
 tower-http  = { version = "0.3.4", features = ["trace", "cors"] }
 # orm
@@ -70,6 +71,7 @@ thiserror = { version = "1.0.37" }
 # misc
 lazy_static = { version = "1.4.0" }
 regex       = { version = "1.7.0" }
+slug 		= { version = "0.1.4" }
 
 
 
