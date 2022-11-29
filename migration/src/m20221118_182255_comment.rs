@@ -11,6 +11,7 @@ impl MigrationTrait for Migration {
 		let sql = r#"
 			CREATE TABLE `comment` (
 			  `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'id',
+			  `parent_id` bigint DEFAULT NULL COMMENT 'parent id',
 			  `content` text NOT NULL COMMENT 'content',
 			  `content_type` tinyint unsigned NOT NULL DEFAULT '0' COMMENT 'Article content (0: markdown, 1: html)',
 			  `article_id` bigint unsigned NOT NULL COMMENT 'article id',
