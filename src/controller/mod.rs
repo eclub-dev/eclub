@@ -9,5 +9,7 @@ pub mod category;
 pub mod profile;
 #[allow(missing_docs)]
 pub mod article;
+#[allow(missing_docs)]
+pub mod commit;
 
 

@@ -20,6 +20,8 @@ pub mod article_category;
 pub mod user_category;
 #[allow(missing_docs)]
 pub mod article_favorite;
+#[allow(missing_docs)]
+pub mod commit;
 
 pub use self::article::ArticleService;
 pub use self::article_tag::ArticleTagService;
