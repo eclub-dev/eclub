@@ -2,7 +2,7 @@ use axum::Json;
 use sea_orm::*;
 
 use crate::domain::helper::email::EmailSendBO;
-use crate::domain::helper::user::{verify_password, LoginUserVO, UserBO, UserVO};
+use crate::domain::helper::user::{verify_password, LoginUserVO, UpdateUserVO, UserBO, UserVO};
 use crate::domain::models::email::{self, Model as EmailModel};
 use crate::domain::models::user::{self, ActiveModel, Entity, Model};
 use crate::service::EmailService;
@@ -14,7 +14,6 @@ pub struct UserService;
 
 /// Defining a new struct called `UserService` and implementing it.
 impl UserService {
-
 	/// It saves the user, sends a confirmation email, and returns the saved user
 	///
 	/// Arguments:
@@ -27,16 +26,39 @@ impl UserService {
 	/// Returns:
 	///
 	/// A `Result` of a `Json` of a `UserVO` of a `UserBO`
-	pub async fn create_or_update(
+	pub async fn create_user(
 		app_state: &AppState,
 		user: ActiveModel,
-		is_create: bool,
 	) -> Result<Json<UserVO<UserBO>>> {
 		let saved_model: Model = user.save(&app_state.conn).await?.try_into_model()?;
-		tracing::debug!("create_or_update: {:?}", saved_model);
-		if is_create {
-			EmailService::send_user_confirm(&app_state, &EmailSendBO::from_user(&saved_model)).await?;
-		}
+		tracing::debug!("create: {:?}", saved_model);
+		EmailService::send_user_confirm(&app_state, &EmailSendBO::from_user(&saved_model)).await?;
+		Ok(Json(UserVO {
+			user: UserBO::from(saved_model),
+		}))
+	}
+
+	/// It finds a user by id, updates the user's email, username, password, bio, and avatar, and then returns the updated user
+	///
+	/// Arguments:
+	///
+	/// * `app_state`: &AppState - This is the application state that we created in the main.rs file.
+	/// * `user_id`: The id of the user to update.
+	/// * `update_user`: &UpdateUserVO
+	///
+	/// Returns:
+	///
+	/// A `Result<Json<UserVO<UserBO>>>`
+	pub async fn update_user(app_state: &AppState, user_id: &u64, update_user: &UpdateUserVO) -> Result<Json<UserVO<UserBO>>> {
+		let user_model: Model = Entity::find_by_id(user_id).one(&app_state.conn).await?.ok_or(Error::NotFound)?;
+		let mut user_active_model: ActiveModel = user_model.into();
+		user_active_model.email = Set(update_user.email.to_owned());
+		user_active_model.username = Set(update_user.username.to_owned());
+		user_active_model.password = Set(update_user.password.to_owned());
+		user_active_model.bio = Set(update_user.bio.to_owned());
+		user_active_model.avatar = Set(update_user.avatar.to_owned());
+		let saved_model: Model = user_active_model.update(&app_state.conn).await?;
+		tracing::debug!("update: {:?}", saved_model);
 		Ok(Json(UserVO {
 			user: UserBO::from(saved_model),
 		}))

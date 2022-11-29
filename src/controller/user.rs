@@ -25,7 +25,7 @@ async fn create_user(
 	ValidatedJson(req): ValidatedJson<UserVO<CreatUserVO>>,
 ) -> Result<Json<UserVO<UserBO>>> {
 	let creat_user = req.user.generate_hash_password().await?;
-	Ok(UserService::create_or_update(&app_state, creat_user.into(), true).await?)
+	Ok(UserService::create_user(&app_state, creat_user.into()).await?)
 }
 
 async fn login_user(
@@ -51,7 +51,7 @@ async fn update_user(
 		return get_current_user(State(app_state.to_owned()), auth_user).await;
 	}
 	let update_user = req.user.generate_hash_password().await?;
-	Ok(UserService::create_or_update(&app_state, update_user.into(), false).await?)
+	Ok(UserService::update_user(&app_state, &auth_user.id, &update_user).await?)
 }
 
 async fn confirm_user(State(app_state): State<AppState>, Path(token): Path<String>) -> Result<Json<UserVO<UserBO>>> {
