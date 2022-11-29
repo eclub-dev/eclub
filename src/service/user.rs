@@ -50,11 +50,11 @@ impl UserService {
 	///
 	/// A `Result<Json<UserVO<UserBO>>>`
 	pub async fn update_user(app_state: &AppState, user_id: &u64, update_user: &UpdateUserVO) -> Result<Json<UserVO<UserBO>>> {
-		let user_model: Model = Entity::find_by_id(user_id).one(&app_state.conn).await?.ok_or(Error::NotFound)?;
+		let user_model: Model = Entity::find_by_id(user_id.to_owned()).one(&app_state.conn).await?.ok_or(Error::NotFound)?;
 		let mut user_active_model: ActiveModel = user_model.into();
 		user_active_model.email = Set(update_user.email.to_owned());
 		user_active_model.username = Set(update_user.username.to_owned());
-		user_active_model.password = Set(update_user.password.to_owned());
+		user_active_model.password = Set(update_user.password.to_owned().unwrap_or_default());
 		user_active_model.bio = Set(update_user.bio.to_owned());
 		user_active_model.avatar = Set(update_user.avatar.to_owned());
 		let saved_model: Model = user_active_model.update(&app_state.conn).await?;
