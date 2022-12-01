@@ -22,6 +22,8 @@ pub mod user_category;
 pub mod article_favorite;
 #[allow(missing_docs)]
 pub mod commit;
+#[allow(missing_docs)]
+pub mod channel;
 
 pub use self::article::ArticleService;
 pub use self::article_tag::ArticleTagService;
@@ -32,3 +34,4 @@ pub use self::tag::TagService;
 pub use self::user::UserService;
 pub use self::user_category::UserCategoryService;
 pub use self::article_category::ArticleCategoryService;
+pub use self::channel::ChannelService;

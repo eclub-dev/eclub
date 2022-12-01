@@ -7,6 +7,7 @@ pub mod category;
 pub mod profile;
 pub mod article;
 pub mod commit;
+pub mod channel;
 
 
 #[derive(serde::Serialize)]

@@ -11,5 +11,7 @@ pub mod profile;
 pub mod article;
 #[allow(missing_docs)]
 pub mod commit;
+#[allow(missing_docs)]
+pub mod channel;
 
 
